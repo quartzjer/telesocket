@@ -10,7 +10,11 @@ exports.install = function(self)
       var parts = uri.substr(5).split("/");
       var to = self.whois(parts.shift());
       if(!to) return warn("invalid TS hashname")&&false;
-      return to.socket(parts.join("/"));
+      var pathname = parts.join("/");
+      if(!pathname) pathname = "/";
+      var chan = to.start("ts",{bare:true,js:{path:pathname}});
+      chan.wrap("TS");
+      return chan.socket;
     }
     if(uri.indexOf("/") != 0) return warn("invalid TS listening uri")&&false;
     debug("adding TS listener",uri)
@@ -32,7 +36,7 @@ exports.install = function(self)
   }
 
   
-  self.channelWraps["TS"] = function(chan){
+  self.wraps["TS"] = function(chan){
     chan.socket = {data:"", hashname:chan.hashname, id:chan.id};
     chan.callback = function(err, packet, chan, callback){
       // go online
@@ -82,6 +86,7 @@ exports.install = function(self)
     chan.socket.close = function(){
       chan.socket.readyState = 2;
       chan.done();
-    }    
+    }
+    return chan.socket;
   }
 }
