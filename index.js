@@ -17,7 +17,6 @@ exports.install = function(self)
       return chan.socket;
     }
     if(uri.indexOf("/") != 0) return warn("invalid TS listening uri")&&false;
-    debug("adding TS listener",uri)
     self.TSockets[uri] = callback;
   }
 	self.rels["ts"] = function(err, packet, chan, callback)
@@ -66,7 +65,7 @@ exports.install = function(self)
     // set up TS object for external use
     chan.socket.readyState = chan.lastIn ? 1 : 0; // if channel was already active, set state 1
     chan.socket.send = function(data, callback){
-      if(chan.socket.readyState != 1) return debug("sending fail to TS readyState",chan.socket.readyState)&&false;
+      if(chan.socket.readyState != 1) return console.log("sending fail to TS readyState",chan.socket.readyState)&&false;
       // chunk it
       while(data)
       {
@@ -79,7 +78,6 @@ exports.install = function(self)
           packet.callback = callback;
           packet.js.done = true;
         }
-        debug("TS SEND",chunk.length,packet.js.done);
         chan.send(packet);
       }
     }
