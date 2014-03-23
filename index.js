@@ -38,20 +38,22 @@ exports.install = function(self)
   self.wraps["TS"] = function(chan){
     chan.socket = {data:"", hashname:chan.hashname, id:chan.id};
     chan.callback = function(err, packet, chan, callback){
-      // go online
-      if(chan.socket.readyState == 0)
+      chan.socket.readyState = 1;
+      if(chan.socket.onopen)
       {
-        chan.socket.readyState = 1;
-        if(chan.socket.onopen) chan.socket.onopen();
+        chan.socket.onopen();
+        delete chan.socket.onopen;
       }
       if(packet.body) chan.socket.data += packet.body;
       if(packet.js.done)
       {
         // allow ack-able onmessage handler instead
         if(chan.socket.onmessageack) chan.socket.onmessageack(chan.socket, callback);
-        else callback();
-        if(chan.socket.onmessage) chan.socket.onmessage(chan.socket);
-        chan.socket.data = "";
+        else{
+          if(chan.socket.onmessage) chan.socket.onmessage(chan.socket);
+          chan.socket.data = "";
+          callback();
+        }
       }else{
         callback();
       }
